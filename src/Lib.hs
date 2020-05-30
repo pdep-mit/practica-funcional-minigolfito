@@ -104,34 +104,52 @@ En principio necesitamos representar los siguientes obstáculos:
 - Laguna
 - Hoyo
 -}
-
+data Obstaculo = UnObstaculo {
+  puedeSuperar :: Tiro -> Bool,
+  efectoLuegoDeSuperar :: Tiro -> Tiro
+  }
+intentarSuperarObstaculo :: Obstaculo -> Tiro -> Tiro
+intentarSuperarObstaculo obstaculo tiroOriginal
+  | (puedeSuperar obstaculo) tiroOriginal = (efectoLuegoDeSuperar obstaculo) tiroOriginal
+  | otherwise = tiroDetenido
 {-
 Un túnel con rampita sólo es superado si la precisión es mayor a 90 yendo al ras del suelo, independientemente de la velocidad del tiro. Al salir del túnel la velocidad del tiro se duplica, la precisión pasa a ser 100 y la altura 0.
 -}
-tunelConRampita :: Tiro -> Tiro
-tunelConRampita tiroOriginal
-  | superaTunelConRampita tiroOriginal = efectoTunelConRampita tiroOriginal
-  | otherwise = tiroDetenido
+tunelConRampita :: Obstaculo
+tunelConRampita = UnObstaculo superaTunelConRampita efectoTunelConRampita
 
 tiroDetenido = UnTiro 0 0 0
 
 superaTunelConRampita :: Tiro -> Bool
-superaTunelConRampita = undefined
+superaTunelConRampita tiro = precision tiro > 90 && vaAlRasDelSuelo tiro
+
+vaAlRasDelSuelo = (== 0).altura
 
 efectoTunelConRampita :: Tiro -> Tiro
-efectoTunelConRampita = undefined
+efectoTunelConRampita tiroOriginal = UnTiro {
+  velocidad = velocidad tiroOriginal *2,
+  precision = 100,
+  altura = 0 }
 {-
 Una laguna es superada si la velocidad del tiro es mayor a 80 y tiene una altura de entre 1 y 5 metros. Luego de superar una laguna el tiro llega con la misma velocidad y precisión, pero una altura equivalente a la altura original dividida por el largo de la laguna.
 -}
-laguna :: Tiro -> Tiro
-laguna tiroOriginal
-  | superaLaguna tiroOriginal = efectoLaguna tiroOriginal
-  | otherwise = tiroDetenido
+laguna :: Int -> Obstaculo
+laguna largo = UnObstaculo superaLaguna (efectoLaguna largo)
 
 superaLaguna :: Tiro -> Bool
-superaLaguna = undefined
-efectoLaguna :: Tiro -> Tiro
-efectoLaguna = undefined
+superaLaguna tiro = velocidad tiro > 80 && (between 1 5 . altura) tiro
+efectoLaguna :: Int -> Tiro -> Tiro
+efectoLaguna largo tiroOriginal = tiroOriginal {
+    altura = altura tiroOriginal `div` largo
+  }
 {-
 Un hoyo se supera si la velocidad del tiro está entre 5 y 20 m/s yendo al ras del suelo con una precisión mayor a 95. Al superar el hoyo, el tiro se detiene, quedando con todos sus componentes en 0.
 -}
+
+hoyo :: Obstaculo
+hoyo = UnObstaculo superaHoyo efectoHoyo
+
+superaHoyo :: Tiro -> Bool
+superaHoyo tiro = (between 5 20 . velocidad) tiro && vaAlRasDelSuelo tiro && precision tiro > 95
+efectoHoyo :: Tiro -> Tiro
+efectoHoyo _ = tiroDetenido
