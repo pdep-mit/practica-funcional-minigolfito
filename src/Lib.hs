@@ -172,3 +172,16 @@ palosUtiles' jugador obstaculo = filter (puedeSuperar obstaculo . golpe jugador)
 
 leSirveParaSuperar :: Jugador -> Obstaculo -> Palo -> Bool
 leSirveParaSuperar jugador obstaculo = puedeSuperar obstaculo . golpe jugador
+
+{-
+Saber, a partir de un conjunto de obstáculos y un tiro, cuántos obstáculos consecutivos se pueden superar.
+
+Por ejemplo, para un tiro de velocidad = 10, precisión = 95 y altura = 0, y una lista con dos túneles con rampita seguidos de un hoyo, el resultado sería 2 ya que la velocidad al salir del segundo túnel es de 40, por ende no supera el hoyo.
+-}
+
+cuantosObstaculosConsecutivosSupera :: Tiro -> [Obstaculo] -> Int
+cuantosObstaculosConsecutivosSupera tiro [] = 0
+cuantosObstaculosConsecutivosSupera tiro (obstaculo : obstaculos)
+  | puedeSuperar obstaculo tiro
+      = 1 + cuantosObstaculosConsecutivosSupera (efectoLuegoDeSuperar obstaculo tiro) obstaculos
+  | otherwise = 0
