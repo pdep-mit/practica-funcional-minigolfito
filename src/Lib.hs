@@ -149,3 +149,16 @@ hoyo :: Obstaculo
 hoyo = obstaculoSuperableSi superaHoyo efectoHoyo
 superaHoyo tiro = (between 5 20.velocidad) tiro && vaAlRasDelSuelo tiro
 efectoHoyo _ = tiroDetenido
+
+{-
+Definir palosUtiles que dada una persona y un obstáculo, permita determinar qué palos le sirven para superarlo.
+-}
+
+-- type Obstaculo = Tiro -> Tiro
+-- golpe :: Jugador -> Palo -> Tiro
+palosUtiles :: Jugador -> Obstaculo -> [Palo]
+palosUtiles jugador obstaculo = filter (leSirveParaSuperar jugador obstaculo) palos
+
+-- Esto no tipa!! obstaculo retorna un tiro, no un booleano
+leSirveParaSuperar :: Jugador -> Obstaculo -> Palo -> Bool
+leSirveParaSuperar jugador obstaculo palo = obstaculo (golpe jugador palo)
