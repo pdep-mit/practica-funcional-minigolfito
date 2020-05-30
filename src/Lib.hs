@@ -153,3 +153,22 @@ superaHoyo :: Tiro -> Bool
 superaHoyo tiro = (between 5 20 . velocidad) tiro && vaAlRasDelSuelo tiro && precision tiro > 95
 efectoHoyo :: Tiro -> Tiro
 efectoHoyo _ = tiroDetenido
+
+{-
+data Obstaculo = UnObstaculo {
+  puedeSuperar :: Tiro -> Bool,
+  efectoLuegoDeSuperar :: Tiro -> Tiro
+  }
+-}
+
+{-
+Definir palosUtiles que dada una persona y un obstáculo, permita determinar qué palos le sirven para superarlo.
+-}
+
+palosUtiles :: Jugador -> Obstaculo -> [Palo]
+palosUtiles jugador obstaculo = filter (leSirveParaSuperar jugador obstaculo) palos
+
+palosUtiles' jugador obstaculo = filter (puedeSuperar obstaculo . golpe jugador) palos
+
+leSirveParaSuperar :: Jugador -> Obstaculo -> Palo -> Bool
+leSirveParaSuperar jugador obstaculo = puedeSuperar obstaculo . golpe jugador
