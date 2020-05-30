@@ -33,11 +33,7 @@ type Puntos = Int
 
 between n m x = elem x [n .. m]
 
-maximoSegun f = foldl1 (mayorSegun f)
 
-mayorSegun f a b
-  | f a > f b = a
-  | otherwise = b
 
 ----------------------------------------------
 ---- Resolución del ejercicio
@@ -185,3 +181,20 @@ cuantosObstaculosConsecutivosSupera tiro (obstaculo : obstaculos)
   | puedeSuperar obstaculo tiro
       = 1 + cuantosObstaculosConsecutivosSupera (efectoLuegoDeSuperar obstaculo tiro) obstaculos
   | otherwise = 0
+
+{-
+Definir paloMasUtil que recibe una persona y una lista de obstáculos y determina cuál es el palo que le permite superar más obstáculos con un solo tiro.
+-}
+
+-- funciones que nos daban
+maximoSegun :: Ord b => (a -> b) -> [a] -> a
+maximoSegun f = foldl1 (mayorSegun f)
+
+mayorSegun :: Ord x => (t -> x) -> (t -> t -> t)
+mayorSegun f a b
+  | f a > f b = a
+  | otherwise = b
+
+paloMasUtil :: Jugador -> [Obstaculo] -> Palo
+paloMasUtil jugador obstaculos
+  = maximoSegun (flip cuantosObstaculosConsecutivosSupera obstaculos.golpe jugador) palos
