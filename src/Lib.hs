@@ -33,7 +33,13 @@ type Puntos = Int
 
 between n m x = elem x [n .. m]
 
+maximoSegun :: Ord b => (a -> b) -> [a] -> a
+maximoSegun f = foldl1 (mayorSegun f)
 
+mayorSegun :: Ord x => (t -> x) -> (t -> t -> t)
+mayorSegun f a b
+  | f a > f b = a
+  | otherwise = b
 
 ----------------------------------------------
 ---- Resolución del ejercicio
@@ -186,15 +192,22 @@ cuantosObstaculosConsecutivosSupera tiro (obstaculo : obstaculos)
 Definir paloMasUtil que recibe una persona y una lista de obstáculos y determina cuál es el palo que le permite superar más obstáculos con un solo tiro.
 -}
 
--- funciones que nos daban
-maximoSegun :: Ord b => (a -> b) -> [a] -> a
-maximoSegun f = foldl1 (mayorSegun f)
-
-mayorSegun :: Ord x => (t -> x) -> (t -> t -> t)
-mayorSegun f a b
-  | f a > f b = a
-  | otherwise = b
-
 paloMasUtil :: Jugador -> [Obstaculo] -> Palo
 paloMasUtil jugador obstaculos
   = maximoSegun (flip cuantosObstaculosConsecutivosSupera obstaculos.golpe jugador) palos
+
+{-
+    Dada una lista de tipo [(Jugador, Puntos)] que tiene la información de cuántos puntos ganó cada niño al finalizar el torneo, se pide retornar la lista de padres que pierden la apuesta por ser el “padre del niño que no ganó”. Se dice que un niño ganó el torneo si tiene más puntos que los otros niños.
+-}
+
+jugadorDeTorneo = fst
+puntosGanados = snd
+
+pierdenLaApuesta :: [(Jugador, Puntos)] -> [String]
+pierdenLaApuesta puntosDeTorneo
+  = (map (padre.jugadorDeTorneo) . filter (not . gano puntosDeTorneo)) puntosDeTorneo
+
+gano :: [(Jugador, Puntos)] -> (Jugador, Puntos) -> Bool
+gano puntosDeTorneo puntosDeUnJugador
+  = (all ((< puntosGanados puntosDeUnJugador).puntosGanados)
+      . filter (/= puntosDeUnJugador)) puntosDeTorneo
