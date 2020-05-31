@@ -111,16 +111,18 @@ Un túnel con rampita sólo es superado si la precisión es mayor a 90 yendo al 
 
 tiroDetenido = UnTiro 0 0 0
 
-obstaculoSuperableSi
-  :: (Tiro -> Bool) -> (Tiro -> Tiro) -> Obstaculo
-obstaculoSuperableSi condicion efecto tiroOriginal
-  | condicion tiroOriginal = efecto tiroOriginal
+intentarSuperarObstaculo :: Obstaculo -> Tiro -> Tiro
+intentarSuperarObstaculo obstaculo tiroOriginal
+  | puedeSuperar obstaculo tiroOriginal = efectoLuegoDeSuperar obstaculo tiroOriginal
   | otherwise = tiroDetenido
 
-type Obstaculo = Tiro -> Tiro
-
 tunelConRampita :: Obstaculo
-tunelConRampita = obstaculoSuperableSi superaTunelConRampita efectoTunelConRampita
+tunelConRampita = UnObstaculo superaTunelConRampita efectoTunelConRampita
+
+data Obstaculo = UnObstaculo {
+  puedeSuperar :: Tiro -> Bool,
+  efectoLuegoDeSuperar :: Tiro -> Tiro
+  }
 
 superaTunelConRampita :: Tiro -> Bool
 superaTunelConRampita tiro = precision tiro > 90 && vaAlRasDelSuelo tiro
@@ -133,7 +135,7 @@ vaAlRasDelSuelo = (==0).altura
 Una laguna es superada si la velocidad del tiro es mayor a 80 y tiene una altura de entre 1 y 5 metros. Luego de superar una laguna el tiro llega con la misma velocidad y precisión, pero una altura equivalente a la altura original dividida por el largo de la laguna.
 -}
 laguna :: Int -> Obstaculo
-laguna largo = obstaculoSuperableSi superaLaguna (efectoLaguna largo)
+laguna largo = UnObstaculo superaLaguna (efectoLaguna largo)
 
 superaLaguna :: Tiro -> Bool
 superaLaguna tiro = velocidad tiro > 80 && (between 1 5.altura) tiro
@@ -146,7 +148,7 @@ Un hoyo se supera si la velocidad del tiro está entre 5 y 20 m/s yendo al ras d
 -}
 
 hoyo :: Obstaculo
-hoyo = obstaculoSuperableSi superaHoyo efectoHoyo
+hoyo = UnObstaculo superaHoyo efectoHoyo
 superaHoyo tiro = (between 5 20.velocidad) tiro && vaAlRasDelSuelo tiro
 efectoHoyo _ = tiroDetenido
 
@@ -154,11 +156,9 @@ efectoHoyo _ = tiroDetenido
 Definir palosUtiles que dada una persona y un obstáculo, permita determinar qué palos le sirven para superarlo.
 -}
 
--- type Obstaculo = Tiro -> Tiro
 -- golpe :: Jugador -> Palo -> Tiro
 palosUtiles :: Jugador -> Obstaculo -> [Palo]
 palosUtiles jugador obstaculo = filter (leSirveParaSuperar jugador obstaculo) palos
 
--- Esto no tipa!! obstaculo retorna un tiro, no un booleano
 leSirveParaSuperar :: Jugador -> Obstaculo -> Palo -> Bool
-leSirveParaSuperar jugador obstaculo palo = obstaculo (golpe jugador palo)
+leSirveParaSuperar jugador obstaculo palo = puedeSuperar obstaculo (golpe jugador palo)
