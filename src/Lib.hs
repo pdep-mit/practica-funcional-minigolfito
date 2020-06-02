@@ -185,3 +185,23 @@ cuantosObstaculosConsecutivosSupera tiro (obstaculo : obstaculos)
   | puedeSuperar obstaculo tiro
       = 1 + cuantosObstaculosConsecutivosSupera (efectoLuegoDeSuperar obstaculo tiro) obstaculos
   | otherwise = 0
+
+{-
+Ejemplos para probar:
+*Lib Lib> cuantosObstaculosConsecutivosSupera (UnTiro {velocidad = 95, altura = 2, precision = 95}) [laguna 3, tunelConRampita, tunelConRampita, hoyo]
+3
+*Lib Lib> cuantosObstaculosConsecutivosSupera (UnTiro {velocidad = 95, altura = 2, precision = 95}) [laguna 3, tunelConRampita, laguna 1, tunelConRampita, hoyo]
+2
+-}
+
+cuantosObstaculosConsecutivosSupera' :: Tiro -> [Obstaculo] -> Int
+cuantosObstaculosConsecutivosSupera' tiro obstaculos
+  = (length . takeWhile (\(obstaculo, tiroQueLeLlega) -> puedeSuperar obstaculo tiroQueLeLlega)
+      . zip obstaculos . tirosSucesivos tiro) obstaculos
+
+tirosSucesivos :: Tiro -> [Obstaculo] -> [Tiro]
+tirosSucesivos tiroOriginal obstaculos
+  = foldl (\tirosGenerados obstaculo ->
+         tirosGenerados ++
+           [efectoLuegoDeSuperar obstaculo (last tirosGenerados)]
+      ) [tiroOriginal] obstaculos
